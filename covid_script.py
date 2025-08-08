@@ -20,25 +20,17 @@ st.set_page_config(
 )
 
 # Title and introduction
-st.title("🦠 COVID-19 Time Series Forecasting with Deep Learning")
-st.markdown("""
-This app demonstrates a sophisticated time series forecasting pipeline that combines:
-- **Autoencoder-based denoising** to remove outliers and noise
-- **Triple exponential smoothing** to capture trends and seasonality  
-- **LSTM neural networks** for sequence-to-sequence prediction
-
-Upload your COVID-19 data or use the sample dataset to see how each component contributes to the final forecast.
-""")
+st.title("COVID-19 Time Series Forecasting")
 
 # Sidebar for parameters
-st.sidebar.header("🔧 Model Parameters")
+st.sidebar.header("Model Parameters")
 predict_ahead = st.sidebar.slider("Prediction horizon (days)", 1, 14, 7)
 train_split = st.sidebar.slider("Training data percentage", 0.6, 0.9, 0.75)
 lstm_epochs = st.sidebar.slider("LSTM training epochs", 50, 300, 150)
 hidden_units = st.sidebar.slider("LSTM hidden units", 50, 200, 100)
 
 # Data upload section
-st.header("📊 Data Input")
+st.header("Data Input")
 uploaded_file = st.file_uploader("Upload COVID-19 CSV file", type=['csv'])
 
 if uploaded_file is not None:
@@ -84,11 +76,7 @@ st.plotly_chart(fig_raw, use_container_width=True)
 st.header("🔄 Data Processing Pipeline")
 
 # Step 1: Data Preprocessing
-st.subheader("Step 1: Data Standardization")
-st.markdown("""
-**Why standardize?** Neural networks work better when input features have similar scales. 
-Z-score normalization transforms data to have mean=0 and std=1.
-""")
+st.subheader("Data Standardization")
 
 raw_cases = data['cases'].values
 scaler = StandardScaler()
@@ -105,11 +93,7 @@ with col2:
     st.plotly_chart(fig_after, use_container_width=True)
 
 # Step 2: Autoencoder Denoising
-st.subheader("Step 2: Autoencoder-Based Denoising")
-st.markdown("""
-**Purpose:** Remove outliers and noise by training an autoencoder to reconstruct 'normal' patterns.
-Points with high reconstruction error are likely outliers and get replaced with reconstructed values.
-""")
+st.subheader("Autoencoder-Based Denoising")
 
 # Build and train autoencoder
 @st.cache_data
@@ -171,7 +155,7 @@ st.plotly_chart(fig_denoise, use_container_width=True)
 st.info(f"Detected and corrected {np.sum(outlier_mask)} outliers ({100*np.sum(outlier_mask)/len(data):.1f}% of data)")
 
 # Step 3: Triple Exponential Smoothing (Holt-Winters)
-st.subheader("Step 3: Triple Exponential Smoothing (Holt-Winters)")
+st.subheader("Triple Exponential Smoothing (Holt-Winters)")
 st.markdown("""
 **Components:**
 - **Level (α):** Base value, responds to recent changes
@@ -230,11 +214,7 @@ fig_components.update_layout(height=800, title_text="Holt-Winters Decomposition"
 st.plotly_chart(fig_components, use_container_width=True)
 
 # Step 4: LSTM Prediction
-st.subheader("Step 4: LSTM Neural Network Training")
-st.markdown("""
-**LSTM (Long Short-Term Memory)** networks are designed to learn long-term dependencies in sequential data.
-They use gates to control information flow and can remember important patterns over time.
-""")
+st.subheader("LSTM Neural Network Training")
 
 # Prepare data for LSTM
 def create_sequences(data, sequence_length):
@@ -363,7 +343,7 @@ fig_results.update_layout(
 st.plotly_chart(fig_results, use_container_width=True)
 
 # Convert back to original scale for interpretation
-st.subheader("🔄 Results in Original Scale")
+st.subheader("Results in Original Scale")
 
 # Transform predictions back to original scale
 y_test_original = scaler.inverse_transform(y_test.reshape(-1, 1)).flatten()
@@ -436,7 +416,7 @@ with col2:
     st.plotly_chart(error_fig, use_container_width=True)
 
 # Summary and insights
-st.header("📋 Summary & Key Insights")
+st.header("Summary")
 
 st.markdown(f"""
 ### Model Performance Summary
@@ -450,25 +430,6 @@ st.markdown(f"""
 - **RMSE**: {rmse_original:,.0f} daily cases
 - **MAPE**: {mape_original:.2f}% (lower is better)
 - **Prediction Horizon**: {predict_ahead} days ahead
-
-### Educational Takeaways
-
-**Why This Approach Works:**
-- **Denoising** removes data quality issues that could mislead the model
-- **Smoothing** helps the LSTM focus on true patterns rather than noise
-- **Sequential Learning** captures complex temporal dependencies that traditional methods miss
-
-**When to Use This Method:**
-- Time series with clear trends and seasonal patterns
-- Noisy data that benefits from preprocessing
-- Need for multi-step ahead forecasting
-- When interpretability of components is valuable
-
-**Limitations to Consider:**
-- Requires sufficient training data (typically 100+ observations)
-- Performance degrades for predictions far into the future
-- May not adapt quickly to sudden pattern changes
-- Computational complexity higher than simple methods
 """)
 
 # Download section
