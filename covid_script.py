@@ -288,7 +288,7 @@ with col3:
     st.metric("Test MAPE", f"{test_mape:.2f}%")
 
 # Visualize results
-st.subheader("📈 Prediction Results")
+st.subheader("Prediction Results")
 
 # Create comprehensive results plot
 fig_results = go.Figure()
